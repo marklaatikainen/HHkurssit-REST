@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fi.markl.lukkarit.Methods;
 import fi.markl.lukkarit.model.Options;
-import fi.markl.lukkarit.model.Time;
-import fi.markl.lukkarit.model.TimeInfo;
 import fi.markl.lukkarit.model.Times;
+import fi.markl.lukkarit.model.TimesOutput;
 import fi.markl.lukkarit.model.repositories.TimetableRepository;
 
 @CrossOrigin
@@ -38,130 +37,62 @@ public class TimetableController {
 
 	// get by course
 	@RequestMapping(value = "/course/{id}", method = RequestMethod.GET)
-	public @ResponseBody Time timetables(@PathVariable String id) {
-		Time result = new Time();
-		TimeInfo timeinfo = null;
-		ArrayList<TimeInfo> timeInfoList = new ArrayList<TimeInfo>();
+	public @ResponseBody List<TimesOutput> timetables(@PathVariable String id) {
 		List<Times> queryResult = repository.findAllById(id);
-		ArrayList<String> templist = null;
+		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
-		result.setOpintotunnus(queryResult.get(0).getId());
-		result.setKurssinimi(queryResult.get(0).getName());
-
-		int last = 0;
 		for (Times time : queryResult) {
-			if (last != time.getPeriodi()) {
-				// periodi timeinfoon
-				timeinfo = new TimeInfo();
-				templist = new ArrayList<String>();
-				timeinfo.setPeriodi(time.getPeriodi());
-				// ajat listaan ja työnnetään lista timeinfoon
-
-				timeinfo.setAika(setList(time, templist));
-				// timeinfo työnnetään timeen
-				timeInfoList.add(timeinfo);
-				// toisto
-				last = time.getPeriodi();
-			} else {
-				timeinfo.setAika(setList(time, templist));
-			}
-			result.setAikataulut(timeInfoList);
+			TimesOutput out = new TimesOutput();
+			out.setId(time.getId());
+			out.setName(time.getName());
+			out.setTime(setList(time));
+			out.setStr(time.getAj_str());
+			outputList.add(out);
 		}
 
-		return result;
+		return outputList;
 	}
 
 	// get group courses
 	@RequestMapping(value = "/group/{id}", method = RequestMethod.GET)
-	public @ResponseBody List<Time> groupTimetables(@PathVariable String id) {
-		TimeInfo timeinfo = null;
-		List<Time> resultList = new ArrayList<Time>();
-		ArrayList<TimeInfo> timeInfoList = new ArrayList<TimeInfo>();
+	public @ResponseBody List<TimesOutput> groupTimetables(@PathVariable String id) {
 		List<Times> queryResult = repository.findByGroup(id);
-		ArrayList<String> templist = null;
-		Time result = null;
+		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
-		Times lastcourse = queryResult.get(0);
-		int lastperiod = 0;
-		boolean first = true;
 		for (Times time : queryResult) {
-
-			if (first) {
-				// ensimmäinen kierros
-				result = new Time();
-				timeinfo = new TimeInfo();
-				templist = new ArrayList<String>();
-				// Uusi kurssi-id
-				result.setOpintotunnus(time.getId());
-				result.setKurssinimi(time.getName());
-				timeinfo.setPeriodi(time.getPeriodi());
-				timeinfo.setAika(setList(time, templist));
-				timeInfoList.add(timeinfo);
-				first = false;
-				lastperiod = time.getPeriodi();
-			} else if (lastcourse.getId().equals(result.getOpintotunnus())) {
-				// sama kurssi, kuin edellisellä kierroksella
-				if (time.getId() != lastcourse.getId()) {
-					lastperiod = 0;
-				}
-				if (lastperiod != time.getPeriodi()) {
-					// uusi periodi
-					timeinfo = new TimeInfo();
-					templist = new ArrayList<String>();
-					timeinfo.setPeriodi(time.getPeriodi());
-
-					timeinfo.setAika(setList(time, templist));
-
-					if (timeinfo.getPeriodi() == time.getPeriodi() && result.getOpintotunnus().equals(time.getId())) {
-						timeInfoList.add(timeinfo);
-					}
-				} else {
-					// sama periodi, uusi aika
-					if (time.getId().equals(lastcourse.getId())) {
-						timeinfo.setAika(setList(time, templist));
-
-						if (!timeInfoList.contains(timeinfo)) {
-							timeInfoList.add(timeinfo);
-						}
-					}
-				}
-				lastperiod = time.getPeriodi();
-			} else {
-				// uusi kurssi
-				result = new Time();
-				timeinfo = new TimeInfo();
-				templist = new ArrayList<String>();
-				timeInfoList = new ArrayList<TimeInfo>();
-
-				// Uusi kurssi-id
-				result.setOpintotunnus(time.getId());
-				result.setKurssinimi(time.getName());
-				timeinfo.setPeriodi(time.getPeriodi());
-				timeinfo.setAika(setList(time, templist));
-				timeInfoList.add(timeinfo);
-				lastperiod = 0;
-			}
-
-			if (result.getOpintotunnus().equals(time.getId()) && result.getAikataulut() == null) {
-				result.setAikataulut(timeInfoList);
-				resultList.add(result);
-			}
-
-			lastcourse = time;
+			TimesOutput out = new TimesOutput();
+			out.setId(time.getId());
+			out.setName(time.getName());
+			out.setTime(setList(time));
+			out.setStr(time.getAj_str());
+			outputList.add(out);
 		}
 
-		return resultList;
+		return outputList;
 	}
 
 	// get user courses
-	@RequestMapping(value = "/user/{id}", method = RequestMethod.GET)
-	public @ResponseBody Time userTimetables(@PathVariable int id) {
-		return null;
+	@RequestMapping(value = "/user/{userId}/{groupId}", method = RequestMethod.GET)
+	public @ResponseBody List<TimesOutput> userTimetables(@PathVariable String groupId,@PathVariable int userId) {
+		List<Times> queryResult = repository.findAllOwnCourses(groupId, userId);
+		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
+		for (Times time : queryResult) {
+			TimesOutput out = new TimesOutput();
+			out.setId(time.getId());
+			out.setName(time.getName());
+			out.setTime(setList(time));
+			out.setStr(time.getAj_str());
+			outputList.add(out);
+		}
+
+		return outputList;
 	}
 
 	// asetetaan aikataulut listaan
-	private ArrayList<String> setList(Times time, ArrayList<String> templist) {
+	private ArrayList<String> setList(Times time) {
+		ArrayList<String> templist = new ArrayList<String>();
+
 		if (!time.getMaa().isEmpty()) {
 			templist.add(time.getMaa());
 		}

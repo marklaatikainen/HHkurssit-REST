@@ -27,9 +27,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().authorizeRequests()
-				.antMatchers("/", "/users/register", "/course", "/group", "/program", "/settings", "/time", "/user",
-						"/course/program", "/course/language", "/course/method", "/course/campus", "/course/time/**")
-				.permitAll().antMatchers(HttpMethod.POST, "/login").permitAll().anyRequest().authenticated().and()
+				.antMatchers("/", "/users/register", "/course", "/group", "/program", "/time", "/user").permitAll()
+				.antMatchers(HttpMethod.POST, "/login").permitAll().anyRequest().authenticated().and()
 				// We filter the api/login requests
 				.cors().and()
 				.addFilterBefore(new JWTLoginFilter("/login", authenticationManager()),

@@ -47,7 +47,8 @@ public class UserController {
 		optionList.add(new Options(Methods.PUT, "/",
 				"update user info: { String: 'username', String: firstName, String: lastName, String: userGroup, String: passwordHash }"));
 		optionList.add(new Options(Methods.DELETE, "/{id}", "delete user"));
-		optionList.add(new Options(Methods.GET, "/own/{userId}", "show own courses"));
+		optionList.add(new Options(Methods.GET, "/own/{userId}", "show own modified courses"));
+		optionList.add(new Options(Methods.GET, "/own/{userId}/{groupid}", "show all own courses"));
 		optionList.add(new Options(Methods.DELETE, "/own/{userId}/{courseId}", "delete own course"));
 		optionList.add(new Options(Methods.POST, "/own/l/{userid}/{groupid}", "add own course"));
 		optionList.add(new Options(Methods.POST, "/own/p/{userid}/{groupid}", "remove course from own courses"));
