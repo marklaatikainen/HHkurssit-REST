@@ -73,7 +73,7 @@ public class TimetableController {
 
 	// get user courses
 	@RequestMapping(value = "/user/{userId}/{groupId}/{period}", method = RequestMethod.GET)
-	public @ResponseBody List<TimesOutput> userTimetables(@PathVariable String groupId, @PathVariable int userId,
+	public @ResponseBody List<TimesOutput> userTimetables(@PathVariable int userId, @PathVariable String groupId,
 			@PathVariable int period) {
 		List<Times> queryResult = repository.findAllOwnCourses(groupId, userId, period);
 		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
