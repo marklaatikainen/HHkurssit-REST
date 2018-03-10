@@ -36,9 +36,9 @@ public class TimetableController {
 	}
 
 	// get by course
-	@RequestMapping(value = "/course/{id}", method = RequestMethod.GET)
-	public @ResponseBody List<TimesOutput> timetables(@PathVariable String id) {
-		List<Times> queryResult = repository.findAllById(id);
+	@RequestMapping(value = "/course/{id}/{period}", method = RequestMethod.GET)
+	public @ResponseBody List<TimesOutput> timetables(@PathVariable String id, @PathVariable int period) {
+		List<Times> queryResult = repository.findAllById(id, period);
 		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
 		for (Times time : queryResult) {
@@ -54,9 +54,9 @@ public class TimetableController {
 	}
 
 	// get group courses
-	@RequestMapping(value = "/group/{id}", method = RequestMethod.GET)
-	public @ResponseBody List<TimesOutput> groupTimetables(@PathVariable String id) {
-		List<Times> queryResult = repository.findByGroup(id);
+	@RequestMapping(value = "/group/{id}/{period}", method = RequestMethod.GET)
+	public @ResponseBody List<TimesOutput> groupTimetables(@PathVariable String id, @PathVariable int period) {
+		List<Times> queryResult = repository.findByGroup(id, period);
 		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
 		for (Times time : queryResult) {
@@ -72,9 +72,10 @@ public class TimetableController {
 	}
 
 	// get user courses
-	@RequestMapping(value = "/user/{userId}/{groupId}", method = RequestMethod.GET)
-	public @ResponseBody List<TimesOutput> userTimetables(@PathVariable String groupId,@PathVariable int userId) {
-		List<Times> queryResult = repository.findAllOwnCourses(groupId, userId);
+	@RequestMapping(value = "/user/{userId}/{groupId}/{period}", method = RequestMethod.GET)
+	public @ResponseBody List<TimesOutput> userTimetables(@PathVariable String groupId, @PathVariable int userId,
+			@PathVariable int period) {
+		List<Times> queryResult = repository.findAllOwnCourses(groupId, userId, period);
 		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
 		for (Times time : queryResult) {
