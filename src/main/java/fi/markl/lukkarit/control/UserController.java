@@ -159,6 +159,7 @@ public class UserController {
 	public @ResponseBody ResponseEntity<Object> addCourse(@PathVariable int userId, @PathVariable String groupId,
 			@PathVariable String courseId) {
 		// löytyykö kummastakaan?
+		List<CourseWithHidden> ownCourses = whiddenrepository.findOwnCoursesByUserId(userId);
 		List<CourseWithHidden> groupCourses = whiddenrepository.findGroupsCoursesByGroupId(groupId);
 
 		// lisätään omiin, mikäli ei löydy
@@ -168,9 +169,15 @@ public class UserController {
 				whiddenrepository.deleteCourse(userId, courseId);
 				return new ResponseEntity<Object>(HttpStatus.OK);
 			} else {
-				// lisätään kurssi omiin
-				whiddenrepository.addCourse(userId, courseId);
-				return new ResponseEntity<Object>(HttpStatus.OK);
+				for (CourseWithHidden own : ownCourses) {
+					if (own.getOpintotunnus() == courseId) {
+						return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+					} else {
+						// lisätään kurssi omiin
+						whiddenrepository.addCourse(userId, courseId);
+						return new ResponseEntity<Object>(HttpStatus.OK);
+					}
+				}
 			}
 		}
 		return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
