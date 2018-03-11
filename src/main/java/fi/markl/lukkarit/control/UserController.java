@@ -138,48 +138,42 @@ public class UserController {
 			@PathVariable String courseId) {
 		List<CourseWithHidden> groupCourses = whiddenrepository.findGroupsCoursesByGroupId(groupId);
 
-		// löytyykö ryhmältä?
+		// löytyykö kurssi ryhmältä?
 		for (CourseWithHidden course : groupCourses) {
 			if (course.getOpintotunnus().equals(courseId)) {
 				// merkitään omalle listalle poistetuksi
 				whiddenrepository.updateCourse(userId, courseId);
 				return new ResponseEntity<Object>(HttpStatus.OK);
-			} else {
-				// kurssi poistetaan omalta listalta
-				whiddenrepository.deleteCourse(userId, courseId);
-				return new ResponseEntity<Object>(HttpStatus.OK);
 			}
 		}
-
-		return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+		// kurssi poistetaan omalta listalta
+		whiddenrepository.deleteCourse(userId, courseId);
+		return new ResponseEntity<Object>(HttpStatus.OK);
 	}
 
 	// lisätään oma kurssi
 	@RequestMapping(value = "/own/{userId}/{groupId}/{courseId}", method = RequestMethod.POST)
 	public @ResponseBody ResponseEntity<Object> addCourse(@PathVariable int userId, @PathVariable String groupId,
 			@PathVariable String courseId) {
-		// löytyykö kummastakaan?
 		List<CourseWithHidden> ownCourses = whiddenrepository.findOwnCoursesByUserId(userId);
 		List<CourseWithHidden> groupCourses = whiddenrepository.findGroupsCoursesByGroupId(groupId);
 
-		// lisätään omiin, mikäli ei löydy
 		for (CourseWithHidden group : groupCourses) {
 			// kurssi löytyy ryhmältä joten poistetaan omasta listasta piilotus
 			if (group.getOpintotunnus().equals(courseId)) {
 				whiddenrepository.deleteCourse(userId, courseId);
 				return new ResponseEntity<Object>(HttpStatus.OK);
-			} else {
-				for (CourseWithHidden own : ownCourses) {
-					if (own.getOpintotunnus().equals(courseId)) {
-						return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
-					}
-				}
-				// lisätään kurssi omiin
-				whiddenrepository.addCourse(userId, courseId);
-				return new ResponseEntity<Object>(HttpStatus.OK);
 			}
 		}
-		return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+
+		for (CourseWithHidden own : ownCourses) {
+			if (own.getOpintotunnus().equals(courseId)) {
+				return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
+			}
+		}
+		// lisätään kurssi omiin
+		whiddenrepository.addCourse(userId, courseId);
+		return new ResponseEntity<Object>(HttpStatus.OK);
 	}
 
 	// nollataan omat kurssit
