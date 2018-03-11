@@ -140,7 +140,7 @@ public class UserController {
 
 		// löytyykö ryhmältä?
 		for (CourseWithHidden course : groupCourses) {
-			if (course.getOpintotunnus() == courseId) {
+			if (course.getOpintotunnus().equals(courseId)) {
 				// merkitään omalle listalle poistetuksi
 				whiddenrepository.updateCourse(userId, courseId);
 				return new ResponseEntity<Object>(HttpStatus.OK);
@@ -165,19 +165,18 @@ public class UserController {
 		// lisätään omiin, mikäli ei löydy
 		for (CourseWithHidden group : groupCourses) {
 			// kurssi löytyy ryhmältä joten poistetaan omasta listasta piilotus
-			if (group.getOpintotunnus() == courseId) {
+			if (group.getOpintotunnus().equals(courseId)) {
 				whiddenrepository.deleteCourse(userId, courseId);
 				return new ResponseEntity<Object>(HttpStatus.OK);
 			} else {
 				for (CourseWithHidden own : ownCourses) {
-					if (own.getOpintotunnus() == courseId) {
+					if (own.getOpintotunnus().equals(courseId)) {
 						return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
-					} else {
-						// lisätään kurssi omiin
-						whiddenrepository.addCourse(userId, courseId);
-						return new ResponseEntity<Object>(HttpStatus.OK);
 					}
 				}
+				// lisätään kurssi omiin
+				whiddenrepository.addCourse(userId, courseId);
+				return new ResponseEntity<Object>(HttpStatus.OK);
 			}
 		}
 		return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST);
