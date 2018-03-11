@@ -37,6 +37,7 @@ public interface CourseWithHiddenRepository extends CrudRepository<CourseWithHid
 	@Query(value = "DELETE FROM ryhma_oma WHERE hID = :userId", nativeQuery = true)
 	void restoreCourses(@Param("userId") int userId);
 
+	// TODO: korjaa!!!
 	@Query(value = "SELECT r.kurssi_id AS opintotunnus, L.suoritustapa, L.exchange, L.ilta, L.kurssinimi, L.ala_fin, L.ala_en, L.opetuskieli, L.opintopisteet, L.toimipiste, L.ohjelma, L.alkaa, L.paattyy, L.link, L.tyyli, GROUP_CONCAT(distinct A.ajoitus ORDER BY ajoitus SEPARATOR ', ') AS ajoitukset, L.ilta AS poistettu FROM ryhma_kurssi r RIGHT JOIN lukkari L ON L.opintotunnus = r.kurssi_id left join aikataulut A on A.opinto_id = L.opintotunnus WHERE r.ryhma_ID = ? GROUP BY r.kurssi_id ORDER BY r.kurssi_id", nativeQuery = true)
 	List<CourseWithHidden> findGroupsCoursesByGroupId(String groupId);
 

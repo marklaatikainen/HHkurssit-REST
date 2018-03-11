@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,11 +47,9 @@ public class UserController {
 		optionList.add(new Options(Methods.PUT, "/",
 				"update user info: { String: 'username', String: firstName, String: lastName, String: userGroup, String: passwordHash }"));
 		optionList.add(new Options(Methods.DELETE, "/{id}", "delete user"));
-		optionList.add(new Options(Methods.GET, "/own/{userId}", "show own modified courses"));
-		optionList.add(new Options(Methods.GET, "/own/{userId}/{groupid}", "show all own courses"));
-		optionList.add(new Options(Methods.DELETE, "/own/{userId}/{courseId}", "delete own course"));
-		optionList.add(new Options(Methods.POST, "/own/l/{userid}/{groupid}", "add own course"));
-		optionList.add(new Options(Methods.POST, "/own/p/{userid}/{groupid}", "remove course from own courses"));
+		optionList.add(new Options(Methods.GET, "/own/{userId}/{groupid}", "show own courses"));
+		optionList.add(new Options(Methods.POST, "/own/{userId}/{groupId}/{courseId}", "add own course"));
+		optionList.add(new Options(Methods.DELETE, "/own/{userId}/{groupId}/{courseId}", "delete own course"));
 		optionList.add(new Options(Methods.DELETE, "/own/restore/{userid}", "restore original list"));
 		return optionList;
 	}
@@ -63,17 +61,17 @@ public class UserController {
 
 	@RequestMapping(value = "/register", method = RequestMethod.POST)
 	public User create(@RequestBody User user) {
-		// BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		 BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		user.setRole("USER");
-		// user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+		 user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
 		return userrepository.save(user);
 	}
 
 	@RequestMapping(value = "/", method = RequestMethod.PUT)
 	public User update(@RequestBody User user) {
-		// BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+		 BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		user.setRole("USER");
-		// user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+		 user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
 		return userrepository.save(user);
 	}
 
@@ -132,31 +130,48 @@ public class UserController {
 		return ownList;
 	}
 
-	// listataan omat kurssit
-	@RequestMapping(value = "/own/{userId}", method = RequestMethod.GET)
-	public @ResponseBody List<CourseWithHidden> listOwn(@PathVariable int userId) {
-		return whiddenrepository.findOwnCoursesByUserId(userId);
-	}
-
 	// poistetaan oma kurssi
-	@RequestMapping(value = "/own/{userId}/{courseId}", method = RequestMethod.DELETE)
-	public @ResponseBody String removeCourse(@PathVariable int userId, @PathVariable String courseId) {
-		whiddenrepository.deleteCourse(userId, courseId);
-		return "Kurssi poistettu";
+	@RequestMapping(value = "/own/{userId}/{groupId}/{courseId}", method = RequestMethod.DELETE)
+	public @ResponseBody String removeCourse(@PathVariable int userId, @PathVariable String groupId,
+			@PathVariable String courseId) {
+		List<CourseWithHidden> groupCourses = whiddenrepository.findGroupsCoursesByGroupId(groupId);
+
+		// löytyykö ryhmältä?
+		for (CourseWithHidden course : groupCourses) {
+			if (course.getOpintotunnus() == courseId) {
+				// merkitään omalle listalle poistetuksi
+				whiddenrepository.updateCourse(userId, courseId);
+				return "Kurssi poistettu";
+			} else {
+				// kurssi poistetaan omalta listalta
+				whiddenrepository.deleteCourse(userId, courseId);
+				return "Kurssi poistettu";
+			}
+		}
+
+		return "Tapahtui virhe poistossa!";
 	}
 
 	// lisätään oma kurssi
-	@RequestMapping(value = "/own/l/{userId}/{courseId}", method = RequestMethod.POST)
-	public @ResponseBody String addCourse(@PathVariable int userId, @PathVariable String courseId) {
-		whiddenrepository.addCourse(userId, courseId);
-		return "Kurssi lisätty";
-	}
+	@RequestMapping(value = "/own/{userId}/{groupId}/{courseId}", method = RequestMethod.POST)
+	public @ResponseBody String addCourse(@PathVariable int userId, @PathVariable String groupId,
+			@PathVariable String courseId) {
+		// löytyykö kummastakaan?
+		List<CourseWithHidden> groupCourses = whiddenrepository.findGroupsCoursesByGroupId(groupId);
 
-	// päivitetään omaa kurssia
-	@RequestMapping(value = "/own/p/{userId}/{courseId}", method = RequestMethod.POST)
-	public @ResponseBody String editCourse(@PathVariable int userId, @PathVariable String courseId) {
-		whiddenrepository.updateCourse(userId, courseId);
-		return "Kurssi poistettu";
+		// lisätään omiin, mikäli ei löydy
+		for (CourseWithHidden group : groupCourses) {
+			// kurssi löytyy ryhmältä joten poistetaan omasta listasta piilotus
+			if (group.getOpintotunnus() == courseId) {
+				whiddenrepository.deleteCourse(userId, courseId);
+				return "Kurssi lisätty";
+			} else {
+				// lisätään kurssi omiin
+				whiddenrepository.addCourse(userId, courseId);
+				return "Kurssi lisätty";
+			}
+		}
+		return "Tapahtui virhe lisäyksessä!";
 	}
 
 	// nollataan omat kurssit
