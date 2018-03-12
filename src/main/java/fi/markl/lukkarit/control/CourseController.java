@@ -47,7 +47,7 @@ public class CourseController {
 		optionList.add(new Options(Methods.GET, "/program", "show courses in that program"));
 		optionList.add(new Options(Methods.GET, "/coursename", "find course by it's name"));
 		optionList.add(new Options(Methods.GET, "/timing", "show courses by timing"));
-		optionList.add(new Options(Methods.GET, "/variantlists", "shows all variants"));
+		optionList.add(new Options(Methods.GET, "/optionlists", "shows all variants"));
 
 		return optionList;
 	}
@@ -266,7 +266,7 @@ public class CourseController {
 		return selected;
 	}
 
-	@RequestMapping(value = "/variantlists", method = RequestMethod.GET)
+	@RequestMapping(value = "/optionlists", method = RequestMethod.GET)
 	public @ResponseBody Variants getLists() {
 		List<String> koulutusohjelmat = vrepo.findAllOhjelma();
 		List<String> opetuskielet = vrepo.findAllOpetuskieli();

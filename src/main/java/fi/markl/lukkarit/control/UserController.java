@@ -72,9 +72,9 @@ public class UserController {
 	@RequestMapping(value = "", method = RequestMethod.PUT)
 	public User update(@RequestBody User user) {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		user.setRole("USER");
 		user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-		return userrepository.save(user);
+		return userrepository.update(user.getUsername(), user.getFirstName(), user.getLastName(), user.getUserGroup(),
+				user.getPasswordHash(), user.getId());
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
