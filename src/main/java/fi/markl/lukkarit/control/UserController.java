@@ -70,11 +70,13 @@ public class UserController {
 	}
 
 	@RequestMapping(value = "", method = RequestMethod.PUT)
-	public User update(@RequestBody User user) {
+	public ResponseEntity<Object> update(@RequestBody User user) {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
-		return userrepository.update(user.getUsername(), user.getFirstName(), user.getLastName(), user.getUserGroup(),
+		userrepository.update(user.getUsername(), user.getFirstName(), user.getLastName(), user.getUserGroup(),
 				user.getPasswordHash(), user.getId());
+
+		return new ResponseEntity<Object>(HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
