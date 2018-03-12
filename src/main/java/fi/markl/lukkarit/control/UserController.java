@@ -69,7 +69,7 @@ public class UserController {
 		return userrepository.save(user);
 	}
 
-	@RequestMapping(value = "/", method = RequestMethod.PUT)
+	@RequestMapping(value = "", method = RequestMethod.PUT)
 	public User update(@RequestBody User user) {
 		BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 		user.setRole("USER");
