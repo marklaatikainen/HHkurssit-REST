@@ -9,9 +9,9 @@ public class Variant {
 	private String variant;
 
 	public Variant() {
-		
+
 	}
-	
+
 	public Variant(String variant) {
 		super();
 		this.variant = variant;
@@ -24,6 +24,5 @@ public class Variant {
 	public void setvariant(String variant) {
 		this.variant = variant;
 	}
-	
-	
+
 }

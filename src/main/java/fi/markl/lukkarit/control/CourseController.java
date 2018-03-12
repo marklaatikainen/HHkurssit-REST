@@ -17,8 +17,10 @@ import fi.markl.lukkarit.Methods;
 import fi.markl.lukkarit.model.Course;
 import fi.markl.lukkarit.model.Opettaja;
 import fi.markl.lukkarit.model.Options;
+import fi.markl.lukkarit.model.Variants;
 import fi.markl.lukkarit.model.repositories.CourseRepository;
 import fi.markl.lukkarit.model.repositories.TeacherRepository;
+import fi.markl.lukkarit.model.repositories.VariantsRepository;
 
 @CrossOrigin
 @RestController
@@ -26,6 +28,9 @@ import fi.markl.lukkarit.model.repositories.TeacherRepository;
 public class CourseController {
 	@Autowired
 	private CourseRepository repository;
+
+	@Autowired
+	private VariantsRepository vrepo;
 
 	@Autowired
 	private TeacherRepository teacherRepo;
@@ -42,10 +47,10 @@ public class CourseController {
 		optionList.add(new Options(Methods.GET, "/program", "show courses in that program"));
 		optionList.add(new Options(Methods.GET, "/coursename", "find course by it's name"));
 		optionList.add(new Options(Methods.GET, "/timing", "show courses by timing"));
+		optionList.add(new Options(Methods.GET, "/variantlists", "shows all variants"));
 
 		return optionList;
 	}
-	
 
 	@RequestMapping("/all")
 	public @ResponseBody List<Course> getAllCourses() {
@@ -261,4 +266,19 @@ public class CourseController {
 		return selected;
 	}
 
+	@RequestMapping(value = "/variantlists", method = RequestMethod.GET)
+	public @ResponseBody Variants getLists() {
+		List<String> koulutusohjelmat = vrepo.findAllOhjelma();
+		List<String> opetuskielet = vrepo.findAllOpetuskieli();
+		List<String> suoritustavat = vrepo.findAllSuoritustapa();
+		List<String> toimipisteet = vrepo.findAllToimipiste();
+
+		Variants result = new Variants();
+		result.setKoulutusohjelmat(koulutusohjelmat);
+		result.setOpetuskielet(opetuskielet);
+		result.setSuoritustavat(suoritustavat);
+		result.setToimipisteet(toimipisteet);
+
+		return result;
+	}
 }
