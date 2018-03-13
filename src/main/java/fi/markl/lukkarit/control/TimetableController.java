@@ -75,16 +75,27 @@ public class TimetableController {
 	@RequestMapping(value = "/user/{groupId}/{userId}/{period}", method = RequestMethod.GET)
 	public @ResponseBody List<TimesOutput> userTimetables(@PathVariable String groupId, @PathVariable int userId,
 			@PathVariable int period) {
-		List<Times> queryResult = repository.findAllOwnCourses(groupId, userId, period);
+		List<Times> group = repository.findGroupsTimetablesWithoutRemoved(groupId, userId, period);
+		List<Times> own = repository.findOwnTimetables(period, userId);
+		
 		List<TimesOutput> outputList = new ArrayList<TimesOutput>();
 
-		for (Times time : queryResult) {
+		for (Times time : group) {
 			TimesOutput out = new TimesOutput();
 			out.setId(time.getId());
 			out.setName(time.getName());
 			out.setTime(setList(time));
 			out.setStr(time.getAj_str());
 			outputList.add(out);
+		}
+		
+		for (Times time : own) {
+			TimesOutput out = new TimesOutput();
+			out.setId(time.getId());
+			out.setName(time.getName());
+			out.setTime(setList(time));
+			out.setStr(time.getAj_str());
+			outputList.add(out);			
 		}
 
 		return outputList;
